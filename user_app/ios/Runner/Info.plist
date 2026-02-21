@@ -45,5 +45,10 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Location permissions required by geolocator -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>ResQLink needs your location to show your position on the map and send it with emergency reports.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>ResQLink needs your location to show your position on the map and send it with emergency reports.</string>
 </dict>
 </plist>
