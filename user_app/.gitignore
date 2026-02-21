@@ -23,6 +23,12 @@ migrate_working_dir/
 # is commented out by default.
 #.vscode/
 
+# Local environment secrets — never commit this
+.env
+
+# Android Mapbox secret token — never commit this
+android/gradle.properties
+
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id

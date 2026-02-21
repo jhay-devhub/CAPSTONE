@@ -2,25 +2,27 @@ import 'package:flutter/material.dart';
 import '../../../constants/app_colors.dart';
 import '../../../constants/app_strings.dart';
 import '../../../controllers/location_controller.dart';
+import '../../../controllers/map_controller.dart';
+import 'mapbox_map_widget.dart';
 
-/// Placeholder widget that reserves space for the map that will be
-/// integrated later. Drop the chosen map SDK widget inside
-/// [_MapPlaceholder] when ready.
+/// Orchestrates loading / error states for the map and renders
+/// [MapboxMapWidget] once a GPS fix is available.
 ///
-/// All loading / error states are preserved so the parent screen
-/// needs no changes once the real map is wired in.
+/// All loading / error states are decoupled from the map widget so the
+/// screen only needs to provide the two controllers.
 class MapViewWidget extends StatelessWidget {
   const MapViewWidget({
     super.key,
     required this.locationController,
+    required this.mapController,
   });
 
   final LocationController locationController;
+  final MapController mapController;
 
   @override
   Widget build(BuildContext context) {
     final locationState = locationController.fetchState;
-    final position = locationController.currentPosition;
 
     if (locationState == LocationFetchState.loading) {
       return const _MapLoadingOverlay();
@@ -33,9 +35,10 @@ class MapViewWidget extends StatelessWidget {
       );
     }
 
-    return _MapPlaceholder(
-      latitude: position?.latitude,
-      longitude: position?.longitude,
+    // Location is ready (idle or loaded) — show the live map.
+    return MapboxMapWidget(
+      controller: mapController,
+      locationController: locationController,
     );
   }
 }
@@ -103,55 +106,6 @@ class _MapErrorOverlay extends StatelessWidget {
               icon: const Icon(Icons.refresh),
               label: const Text(AppStrings.retry),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Empty container that marks where the map SDK widget will be placed.
-/// Replace the [Container] child with your chosen map widget when ready.
-class _MapPlaceholder extends StatelessWidget {
-  const _MapPlaceholder({this.latitude, this.longitude});
-
-  final double? latitude;
-  final double? longitude;
-
-  @override
-  Widget build(BuildContext context) {
-    final hasLocation = latitude != null && longitude != null;
-
-    return Container(
-      // TODO: Replace this Container with your chosen map SDK widget.
-      color: const Color(0xFFE8F0E8),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.map_outlined,
-              size: 72,
-              color: AppColors.primary.withAlpha(120),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Map will appear here',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-            if (hasLocation) ...[
-              const SizedBox(height: 8),
-              Text(
-                'Lat: ${latitude!.toStringAsFixed(5)}  '
-                'Lng: ${longitude!.toStringAsFixed(5)}',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.black54,
-                    ),
-              ),
-            ],
           ],
         ),
       ),

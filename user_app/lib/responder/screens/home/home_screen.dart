@@ -3,6 +3,7 @@ import '../../constants/app_colors.dart';
 import '../../constants/app_strings.dart';
 import '../../controllers/help_report_controller.dart';
 import '../../controllers/location_controller.dart';
+import 'location_pin_screen.dart';
 import 'widgets/help_button_widget.dart';
 import 'widgets/home_header_widget.dart';
 import 'widgets/help_status_banner.dart';
@@ -63,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Guard: ignore taps while a report is already in progress.
     if (_helpController.isSending || _isFetchingLocation) return;
 
-    // Step 1 – ensure we have a GPS position before opening the form.
+    // Step 1 – ensure we have a GPS position before opening the map.
     if (_locationController.currentPosition == null) {
       setState(() => _isFetchingLocation = true);
       try {
@@ -87,14 +88,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (!mounted) return;
 
-    // Step 2 – open the form sheet and wait for the user's input.
+    // Step 2 – open the location-pin map so the user can confirm / adjust.
+    final pinned = await Navigator.of(context).push<PinnedLocation>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => LocationPinScreen(
+          initialLat: _locationController.latitude,
+          initialLng: _locationController.longitude,
+        ),
+      ),
+    );
+    if (pinned == null || !mounted) return;
+
+    // Step 3 – open the form sheet and wait for the user's input.
     final formData = await showHelpReportFormSheet(context);
     if (formData == null || !mounted) return;
 
-    // Step 3 – submit the report with the collected form data.
+    // Step 4 – submit using the pinned location (not raw GPS).
     await _helpController.sendHelpReport(
-      latitude: _locationController.latitude,
-      longitude: _locationController.longitude,
+      latitude: pinned.latitude,
+      longitude: pinned.longitude,
       userId: 'user_001', // TODO: replace with real authenticated user ID.
       emergencyType: formData.emergencyType,
       description: formData.description,

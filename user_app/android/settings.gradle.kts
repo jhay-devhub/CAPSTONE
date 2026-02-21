@@ -23,4 +23,24 @@ plugins {
     id("org.jetbrains.kotlin.android") version "2.2.20" apply false
 }
 
+// Mapbox Android SDK is distributed via a private Maven registry.
+// Add your secret downloads token (sk.xxx) to ~/.gradle/gradle.properties:
+//   MAPBOX_DOWNLOADS_TOKEN=sk.xxxxxx
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url = uri("https://api.mapbox.com/downloads/v2/releases/maven")
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+            credentials {
+                username = "mapbox"
+                password = providers.gradleProperty("MAPBOX_DOWNLOADS_TOKEN").getOrElse("")
+            }
+        }
+    }
+}
+
 include(":app")
