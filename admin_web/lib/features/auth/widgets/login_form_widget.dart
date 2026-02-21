@@ -87,7 +87,7 @@ class _EmailField extends StatelessWidget {
           onChanged: (_) => controller.clearError(),
           validator: controller.validateEmail,
           decoration: _inputDecoration(
-            hint: 'admin@example.com',
+            hint: 'Enter your email address',
             icon: Icons.email_outlined,
           ),
         ),
@@ -125,7 +125,8 @@ class _PasswordField extends StatelessWidget {
             onChanged: (_) => controller.clearError(),
             validator: controller.validatePassword,
             decoration: _inputDecoration(
-              hint: '••••••••',
+            
+              hint: 'Enter your password',
               icon: Icons.lock_outline,
               suffixIcon: IconButton(
                 icon: Icon(
