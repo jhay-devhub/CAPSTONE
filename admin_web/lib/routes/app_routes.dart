@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
-import '../features/auth/screens/login_screen.dart';
-import '../features/admin/screens/dashboard_screen.dart';
+import '../features/auth/screens/login.dart';
+import '../features/admin/screens/dashboard.dart';
 import '../core/constants/app_constants.dart';
 import '../core/services/auth_service.dart';
 

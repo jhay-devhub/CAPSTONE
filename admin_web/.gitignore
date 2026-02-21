@@ -26,6 +26,9 @@ migrate_working_dir/
 # Firebase config with sensitive keys — never commit this
 lib/core/config/firebase_options.dart
 
+# Local environment secrets — never commit this
+.env
+
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id

@@ -15,13 +15,21 @@ Future<void> main() async {
   );
 
   // Register core services — permanent so they persist for the app's lifetime.
-  Get.put<AuthService>(AuthService(), permanent: true);
+  final authService = Get.put<AuthService>(AuthService(), permanent: true);
 
-  runApp(const AdminApp());
+  // Check if Firebase already has a valid admin session persisted in the
+  // browser (localStorage). If yes, skip the login screen entirely.
+  final alreadyLoggedIn = await authService.isLoggedInAsAdmin();
+  final startRoute =
+      alreadyLoggedIn ? AppConstants.routeDashboard : AppConstants.routeLogin;
+
+  runApp(AdminApp(initialRoute: startRoute));
 }
 
 class AdminApp extends StatelessWidget {
-  const AdminApp({super.key});
+  const AdminApp({super.key, required this.initialRoute});
+
+  final String initialRoute;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +44,7 @@ class AdminApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
       ),
-      initialRoute: AppConstants.routeLogin,
+      initialRoute: initialRoute,
       getPages: AppRoutes.pages,
       defaultTransition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 200),

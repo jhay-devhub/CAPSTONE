@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
   <!--
@@ -31,8 +31,22 @@
 
   <title>admin_web</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Mapbox GL JS -->
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
+
+  <style>
+    /* Ensure Mapbox containers fill their parent */
+    .mapboxgl-map { width: 100% !important; height: 100% !important; }
+  </style>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
+
+  <!-- Mapbox boundary data (exposes losBanosGeoJSON) -->
+  <script src="los_banos_boundary.js"></script>
+  <!-- Mapbox GL JS bridge (Flutter <-> JS interop) -->
+  <script src="mapbox.js"></script>
 </body>
 </html>

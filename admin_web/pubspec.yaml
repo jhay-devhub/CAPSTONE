@@ -43,6 +43,9 @@ dependencies:
   # State management
   get: ^4.6.6
 
+  # Date/time formatting
+  intl: ^0.20.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
