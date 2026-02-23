@@ -1,12 +1,22 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'responder/config/app_theme.dart';
+import 'responder/constants/app_constants.dart';
 import 'responder/constants/app_strings.dart';
 import 'responder/screens/shell/main_shell_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inject the Mapbox public access token (supplied at build/run time via
+  // --dart-define-from-file=.env — copy .env.example → .env and fill in
+  // your token; never commit the .env file).
+  if (AppConstants.mapboxAccessToken.isNotEmpty) {
+    MapboxOptions.setAccessToken(AppConstants.mapboxAccessToken);
+  }
+
   runApp(const ResQLinkApp());
 }
 

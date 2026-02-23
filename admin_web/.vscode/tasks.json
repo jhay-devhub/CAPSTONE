@@ -1,0 +1,32 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run (web + .env)",
+			"type": "shell",
+			"command": "flutter run -d chrome --dart-define-from-file=.env",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Build web + .env",
+			"type": "shell",
+			"command": "flutter build web --dart-define-from-file=.env",
+			"group": "build",
+			"problemMatcher": []
+		},
+		{
+			"label": "Run Web (persistent login)",
+			"type": "shell",
+			"command": "flutter run -d chrome --dart-define-from-file=.env --web-browser-flag=\"--user-data-dir=C:/flutter-chrome-profile\"",
+			"isBackground": true,
+			"problemMatcher": [
+				"$dart-build"
+			],
+			"group": "build"
+		}
+	]
+}
