@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/help_report_model.dart';
+import '../services/device_id_service.dart';
+import '../services/firestore_service.dart';
 
 /// Manages the state and logic for sending an emergency help report.
 /// Uses [ChangeNotifier] so the UI can rebuild reactively.
@@ -11,6 +13,9 @@ class HelpReportController extends ChangeNotifier {
   String? _errorMessage;
   HelpReportModel? _lastReport;
 
+  final FirestoreService _firestoreService = FirestoreService.instance;
+  final DeviceIdService _deviceIdService = DeviceIdService.instance;
+
   HelpReportState get state => _state;
   String? get errorMessage => _errorMessage;
   HelpReportModel? get lastReport => _lastReport;
@@ -21,12 +26,10 @@ class HelpReportController extends ChangeNotifier {
   /// Sends an emergency help report using the user's [latitude] and [longitude].
   ///
   /// [emergencyType] is required – it determines which vehicle is dispatched.
-  /// All other fields are optional supplementary information.
-  /// Replace the body of [_sendReportToBackend] with your real API call.
+  /// The device ID is fetched automatically from the hardware.
   Future<void> sendHelpReport({
     required double latitude,
     required double longitude,
-    required String userId,
     required EmergencyType emergencyType,
     String? description,
     String? injuryNote,
@@ -38,9 +41,12 @@ class HelpReportController extends ChangeNotifier {
     _errorMessage = null;
 
     try {
+      // Fetch the unique device ID automatically
+      final deviceId = await _deviceIdService.getDeviceId();
+
       final report = HelpReportModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        userId: userId,
+        id: '',
+        deviceId: deviceId,
         latitude: latitude,
         longitude: longitude,
         timestamp: DateTime.now(),
@@ -50,9 +56,13 @@ class HelpReportController extends ChangeNotifier {
         photoPath: photoPath,
       );
 
-      await _sendReportToBackend(report);
+      // Send to Firestore
+      final docId = await _firestoreService.submitHelpReport(report);
 
-      _lastReport = report.copyWith(status: HelpReportStatus.acknowledged);
+      _lastReport = report.copyWith(
+        id: docId,
+        status: HelpReportStatus.pending,
+      );
       _setState(HelpReportState.success);
     } catch (e) {
       debugPrint('[HelpReportController] sendHelpReport error: $e');
@@ -73,17 +83,6 @@ class HelpReportController extends ChangeNotifier {
   void _setState(HelpReportState newState) {
     _state = newState;
     notifyListeners();
-  }
-
-  /// TODO: Replace with a real HTTP / Firebase call.
-  Future<void> _sendReportToBackend(HelpReportModel report) async {
-    // Simulated network delay – remove once real API is integrated.
-    await Future<void>.delayed(const Duration(seconds: 2));
-
-    debugPrint('[HelpReportController] Report sent: ${report.toJson()}');
-
-    // Throw an exception here to test the error path during development:
-    // throw Exception('Server unavailable');
   }
 }
 
