@@ -1,13 +1,8 @@
 /// App-wide constants for the user app.
-/// Mapbox token is injected at build/run time via --dart-define-from-file=.env
-/// Copy .env.example → .env and fill in your token (never commit .env).
 abstract final class AppConstants {
-  // Mapbox access token
-  // Supplied at compile time: --dart-define-from-file=.env
-  static const String mapboxAccessToken = String.fromEnvironment(
-    'MAPBOX_ACCESS_TOKEN',
-    defaultValue: '',
-  );
+  // Mapbox public access token
+  static const String mapboxAccessToken =
+      'pk.eyJ1Ijoiamh5bHJkcnZyIiwiYSI6ImNtbGR0dWg4dzExYnIzY3NhZ3k5ZHF5ejgifQ.n1hDdX1gdZNe7M1BVVyMGw';
 
   // Mapbox base styles
   static const String mapboxStyleStreets =
