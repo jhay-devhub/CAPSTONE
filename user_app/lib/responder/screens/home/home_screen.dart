@@ -105,10 +105,10 @@ class _HomeScreenState extends State<HomeScreen> {
     if (formData == null || !mounted) return;
 
     // Step 4 – submit using the pinned location (not raw GPS).
+    // Device ID is fetched automatically by the controller.
     await _helpController.sendHelpReport(
       latitude: pinned.latitude,
       longitude: pinned.longitude,
-      userId: 'user_001', // TODO: replace with real authenticated user ID.
       emergencyType: formData.emergencyType,
       description: formData.description,
       injuryNote: formData.injuryNote,
