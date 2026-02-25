@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "17039585193",
+    "project_id": "capstone-emergency-app",
+    "storage_bucket": "capstone-emergency-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:17039585193:android:6bffe8915dbcdbeff35eb8",
+        "android_client_info": {
+          "package_name": "com.example.user_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgCVsYq3wjQ8JnIFatHlmhnWFo2YrzgbU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

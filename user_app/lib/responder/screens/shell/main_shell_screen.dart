@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../constants/app_routes.dart';
+import '../../routes/app_routes.dart';
 import '../../widgets/app_bottom_nav_bar.dart';
 import '../home/home_screen.dart';
 import '../rescue_tracking/rescue_tracking_screen.dart';

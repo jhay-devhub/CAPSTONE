@@ -1,14 +1,25 @@
 import 'dart:io';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'responder/config/app_theme.dart';
+import 'responder/config/firebase_options.dart';
+import 'responder/constants/app_theme.dart';
 import 'responder/constants/app_constants.dart';
 import 'responder/constants/app_strings.dart';
 import 'responder/screens/shell/main_shell_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialise Firebase before anything else.
+  // Guard against web – this app is mobile-only; Firebase options are only
+  // configured for Android and iOS.
+  if (!kIsWeb) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
 
   // Inject the Mapbox public access token (supplied at build/run time via
   // --dart-define-from-file=.env — copy .env.example → .env and fill in

@@ -3,22 +3,24 @@ import '../../../constants/app_colors.dart';
 import '../../../constants/app_strings.dart';
 import '../../../controllers/location_controller.dart';
 import '../../../controllers/map_controller.dart';
+import '../../../models/help_report_model.dart';
 import 'mapbox_map_widget.dart';
 
 /// Orchestrates loading / error states for the map and renders
 /// [MapboxMapWidget] once a GPS fix is available.
-///
-/// All loading / error states are decoupled from the map widget so the
-/// screen only needs to provide the two controllers.
 class MapViewWidget extends StatelessWidget {
   const MapViewWidget({
     super.key,
     required this.locationController,
     required this.mapController,
+    this.activeReport,
   });
 
   final LocationController locationController;
   final MapController mapController;
+
+  /// The user’s latest active report – if set, a marker is placed on the map.
+  final HelpReportModel? activeReport;
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +41,7 @@ class MapViewWidget extends StatelessWidget {
     return MapboxMapWidget(
       controller: mapController,
       locationController: locationController,
+      activeReport: activeReport,
     );
   }
 }
