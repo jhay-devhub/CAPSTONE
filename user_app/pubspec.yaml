@@ -43,6 +43,13 @@ dependencies:
   cloud_firestore: ^6.1.2
   firebase_auth: ^6.1.4
 
+  # Firebase
+  firebase_core: ^3.13.0
+  cloud_firestore: ^5.6.6
+
+  # Device identifier (no login/registration – device ID is the reporter key)
+  device_info_plus: ^11.5.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

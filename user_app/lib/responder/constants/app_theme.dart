@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
-import '../constants/app_strings.dart';
+import 'app_colors.dart';
+import 'app_strings.dart';
 
 /// Centralised theme configuration.
 /// Extend [lightTheme] or add [darkTheme] as needed.

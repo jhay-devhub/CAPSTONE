@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/user_profile_model.dart';
+import '../services/device_id_service.dart';
 
 /// Manages the current user's profile data and settings state.
 class ProfileController extends ChangeNotifier {
@@ -53,13 +54,11 @@ class ProfileController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // TODO: Load from local storage / backend
-      await Future<void>.delayed(const Duration(milliseconds: 200));
-      _profile = const UserProfileModel(
-        id: 'user_001',
-        fullName: 'Name Surname',
-        phoneNumber: '+63 912 345 6789',
-        email: 'name@example.com',
+      final deviceId = await DeviceIdService.instance.getDeviceId();
+      _profile = UserProfileModel(
+        id: deviceId,
+        fullName: 'Anonymous',
+        phoneNumber: '',
       );
     } catch (e) {
       debugPrint('[ProfileController] _loadProfile error: $e');

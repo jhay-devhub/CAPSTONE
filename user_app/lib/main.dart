@@ -1,11 +1,12 @@
 import 'dart:io';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'firebase_options.dart';
-import 'responder/config/app_theme.dart';
+import 'responder/config/firebase_options.dart';
+import 'responder/constants/app_theme.dart';
 import 'responder/constants/app_constants.dart';
 import 'responder/constants/app_strings.dart';
 import 'responder/screens/shell/main_shell_screen.dart';
@@ -13,26 +14,18 @@ import 'responder/screens/shell/main_shell_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  // Sign in anonymously so Firestore writes pass authentication checks.
-  // If already signed in (e.g. from a previous session), this is a no-op.
-  try {
-    if (FirebaseAuth.instance.currentUser == null) {
-      final cred = await FirebaseAuth.instance.signInAnonymously();
-      debugPrint('[main] Anonymous sign-in OK – uid: ${cred.user?.uid}');
-    } else {
-      debugPrint('[main] Already signed in – uid: ${FirebaseAuth.instance.currentUser?.uid}');
-    }
-  } catch (e) {
-    debugPrint('[main] *** Anonymous sign-in FAILED: $e');
-    debugPrint('[main] *** Enable Anonymous auth in Firebase Console → Authentication → Sign-in method');
+  // Initialise Firebase before anything else.
+  // Guard against web – this app is mobile-only; Firebase options are only
+  // configured for Android and iOS.
+  if (!kIsWeb) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   }
 
-  // Inject the Mapbox public access token.
+  // Inject the Mapbox public access token (supplied at build/run time via
+  // --dart-define-from-file=.env — copy .env.example → .env and fill in
+  // your token; never commit the .env file).
   if (AppConstants.mapboxAccessToken.isNotEmpty) {
     MapboxOptions.setAccessToken(AppConstants.mapboxAccessToken);
   }

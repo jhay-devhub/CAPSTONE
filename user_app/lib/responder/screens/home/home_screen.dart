@@ -3,12 +3,14 @@ import '../../constants/app_colors.dart';
 import '../../constants/app_strings.dart';
 import '../../controllers/help_report_controller.dart';
 import '../../controllers/location_controller.dart';
+import '../../controllers/recent_reports_controller.dart';
 import '../../services/device_id_service.dart';
 import 'location_pin_screen.dart';
 import 'widgets/help_button_widget.dart';
 import 'widgets/home_header_widget.dart';
 import 'widgets/help_status_banner.dart';
 import 'widgets/help_report_form_sheet.dart';
+import 'widgets/recent_reports_widget.dart';
 
 /// Home screen – entry point for sending an emergency HELP report.
 ///
@@ -27,6 +29,13 @@ class _HomeScreenState extends State<HomeScreen> {
   final HelpReportController _helpController = HelpReportController();
   final LocationController _locationController = LocationController();
 
+  /// Stable anonymous reporter ID – resolved once on init.
+  String _deviceId = '';
+  String _deviceName = '';
+
+  /// Streams the last 3 reports for this device. Created once deviceId resolves.
+  RecentReportsController? _recentReportsController;
+
   /// True only while we are actively waiting for the device GPS fix.
   bool _isFetchingLocation = false;
 
@@ -38,16 +47,19 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _locationController.requestPermissionAndFetch();
     _helpController.addListener(_onHelpStateChanged);
-    _fetchDeviceName();
+    _resolveDeviceInfo();
   }
 
-  Future<void> _fetchDeviceName() async {
-    try {
-      final name = await DeviceIdService.instance.getDeviceName();
-      if (mounted) setState(() => _deviceName = name);
-    } catch (_) {
-      // Silently fail – header will show placeholder
-    }
+  /// Fetch the device ID and name once; stored for the session.
+  Future<void> _resolveDeviceInfo() async {
+    final info = await DeviceIdService.instance.getDeviceInfo();
+    if (!mounted) return;
+    setState(() {
+      _deviceId = info.id;
+      _deviceName = info.name;
+      _recentReportsController =
+          RecentReportsController(deviceId: info.id);
+    });
   }
 
   @override
@@ -55,6 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _helpController.removeListener(_onHelpStateChanged);
     _helpController.dispose();
     _locationController.dispose();
+    _recentReportsController?.dispose();
     super.dispose();
   }
 
@@ -64,9 +77,21 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) return;
     final state = _helpController.state;
 
+    if (state == HelpReportState.failure) {
+      final error = _helpController.errorMessage ?? 'Unknown error';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $error'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 8),
+        ),
+      );
+    }
+
+    // Reset the send-state after 3 s so the button is re-enabled,
+    // but liveStatus keeps showing the Firestore status.
     if (state == HelpReportState.success || state == HelpReportState.failure) {
-      // Auto-reset after 4 s so the user can try again if needed.
-      Future<void>.delayed(const Duration(seconds: 4), () {
+      Future<void>.delayed(const Duration(seconds: 3), () {
         if (mounted) _helpController.reset();
       });
     }
@@ -118,11 +143,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final formData = await showHelpReportFormSheet(context);
     if (formData == null || !mounted) return;
 
-    // Step 4 – submit using the pinned location (not raw GPS).
-    // Device ID is fetched automatically by the controller.
+    // Step 4 – submit using the pinned location + device info to Firestore.
     await _helpController.sendHelpReport(
       latitude: pinned.latitude,
       longitude: pinned.longitude,
+      deviceId: _deviceId,
+      deviceName: _deviceName,
       emergencyType: formData.emergencyType,
       description: formData.description,
       injuryNote: formData.injuryNote,
@@ -139,6 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text(AppStrings.appName),
         centerTitle: true,
+        elevation: 0,
       ),
       body: SafeArea(
         child: ListenableBuilder(
@@ -147,28 +174,41 @@ class _HomeScreenState extends State<HomeScreen> {
             final isBusy =
                 _helpController.isSending || _isFetchingLocation;
 
-            return Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 24),
-                    HomeHeaderWidget(deviceName: _deviceName),
-                    const SizedBox(height: 48),
-                    if (_isFetchingLocation)
-                      const _LocationFetchingIndicator()
-                    else
-                      HelpButtonWidget(
-                        onPressed: _onHelpButtonPressed,
-                        isEnabled: !isBusy,
-                      ),
-                    const SizedBox(height: 28),
-                    HelpStatusBanner(reportState: _helpController.state),
-                    const SizedBox(height: 24),
-                  ],
-                ),
+            return SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // ── Greeting header card ─────────────────────────────────
+                  HomeHeaderWidget(deviceName: _deviceName),
+
+                  const SizedBox(height: 44),
+
+                  // ── HELP button ──────────────────────────────────────────
+                  if (_isFetchingLocation)
+                    const _LocationFetchingIndicator()
+                  else
+                    HelpButtonWidget(
+                      onPressed: _onHelpButtonPressed,
+                      isEnabled: !isBusy,
+                    ),
+
+                  const SizedBox(height: 24),
+
+                  // ── Live status banner (only visible when report active) ─
+                  ListenableBuilder(
+                    listenable: _helpController,
+                    builder: (context, _) =>
+                        HelpStatusBanner(controller: _helpController),
+                  ),
+
+                  const SizedBox(height: 36),
+
+                  // ── Recent reports (live from Firestore, last 3) ─────────
+                  if (_recentReportsController != null)
+                    RecentReportsSection(
+                        controller: _recentReportsController!),
+                ],
               ),
             );
           },

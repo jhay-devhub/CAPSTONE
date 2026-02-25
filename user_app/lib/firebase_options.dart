@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // File generated manually from google-services.json.
 // Run `flutterfire configure` to regenerate if needed.
 
@@ -52,3 +53,9 @@ class DefaultFirebaseOptions {
     storageBucket: 'capstone-emergency-app.firebasestorage.app',
   );
 }
+=======
+// Moved to lib/responder/config/firebase_options.dart
+// This file is kept as a re-export for backwards compatibility.
+export 'responder/config/firebase_options.dart';
+
+>>>>>>> 595f9dab6164cda79ddddad8ee835590f698916f

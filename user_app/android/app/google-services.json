@@ -7,7 +7,11 @@
   "client": [
     {
       "client_info": {
+<<<<<<< HEAD
         "mobilesdk_app_id": "1:17039585193:android:cde79ec45d743843f35eb8",
+=======
+        "mobilesdk_app_id": "1:17039585193:android:6bffe8915dbcdbeff35eb8",
+>>>>>>> 595f9dab6164cda79ddddad8ee835590f698916f
         "android_client_info": {
           "package_name": "com.example.user_app"
         }

@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -6,6 +9,7 @@ import '../../../constants/app_colors.dart';
 import '../../../constants/app_constants.dart';
 import '../../../controllers/location_controller.dart';
 import '../../../controllers/map_controller.dart';
+import '../../../models/help_report_model.dart';
 
 /// Flutter widget that renders a full Mapbox native map via
 /// [MapWidget] from the `mapbox_maps_flutter` package.
@@ -28,10 +32,14 @@ class MapboxMapWidget extends StatefulWidget {
     super.key,
     required this.controller,
     required this.locationController,
+    this.activeReport,
   });
 
   final MapController controller;
   final LocationController locationController;
+
+  /// When set, a red marker is placed at the report's pinned location.
+  final HelpReportModel? activeReport;
 
   @override
   State<MapboxMapWidget> createState() => _MapboxMapWidgetState();
@@ -40,6 +48,10 @@ class MapboxMapWidget extends StatefulWidget {
 class _MapboxMapWidgetState extends State<MapboxMapWidget> {
   MapController get _ctrl => widget.controller;
   LocationController get _locCtrl => widget.locationController;
+  HelpReportModel? get _report => widget.activeReport;
+
+  PointAnnotationManager? _annotationManager;
+  PointAnnotation? _reportAnnotation;
 
   @override
   void initState() {
@@ -53,6 +65,15 @@ class _MapboxMapWidgetState extends State<MapboxMapWidget> {
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(MapboxMapWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Refresh the map marker whenever the active report changes.
+    if (oldWidget.activeReport != widget.activeReport) {
+      _updateReportMarker();
+    }
+  }
+
   // Rebuilds the toolbar when the controller notifies (style / mask changes).
   void _onControllerChanged() {
     if (mounted) setState(() {});
@@ -62,6 +83,10 @@ class _MapboxMapWidgetState extends State<MapboxMapWidget> {
 
   void _onMapCreated(MapboxMap mapboxMap) {
     _ctrl.onMapCreated(mapboxMap);
+    // Create the annotation manager once the map is ready.
+    mapboxMap.annotations
+        .createPointAnnotationManager()
+        .then((mgr) => _annotationManager = mgr);
   }
 
   /// Called by the SDK every time a style finishes loading (initial + swaps).
@@ -70,6 +95,7 @@ class _MapboxMapWidgetState extends State<MapboxMapWidget> {
     await _addBoundaryLayer();
     await _enableLocationPuck();
     await _centreOnUser();
+    await _updateReportMarker();
   }
 
   /// Loads the GeoJSON boundary from assets and adds a line layer.
@@ -134,6 +160,100 @@ class _MapboxMapWidgetState extends State<MapboxMapWidget> {
     if (pos != null) {
       await _ctrl.flyTo(pos.longitude, pos.latitude, targetZoom: 15.0);
     }
+  }
+
+  /// Places or updates a red marker at the active report's pinned location.
+  /// Flies the camera to the report location so the user can see it.
+  Future<void> _updateReportMarker() async {
+    final mgr = _annotationManager;
+    final report = _report;
+    if (mgr == null) return;
+
+    // Remove old marker.
+    if (_reportAnnotation != null) {
+      await mgr.delete(_reportAnnotation!);
+      _reportAnnotation = null;
+    }
+
+    if (report == null) return;
+
+    // Draw a red teardrop pin as a bitmap so we get a proper icon instead
+    // of Mapbox falling back to the textField label.
+    final pinBytes = await _drawPinBitmap(AppColors.primary);
+
+    final annotation = await mgr.create(
+      PointAnnotationOptions(
+        geometry: Point(
+          coordinates: Position(report.longitude, report.latitude),
+        ),
+        image: pinBytes,
+        iconSize: 1.0,
+        iconAnchor: IconAnchor.BOTTOM,
+      ),
+    );
+    _reportAnnotation = annotation;
+
+    // Fly camera to show the report pin.
+    await _ctrl.flyTo(report.longitude, report.latitude, targetZoom: 15.0);
+  }
+
+  /// Draws a teardrop-shaped pin and returns it as raw PNG bytes.
+  static Future<Uint8List> _drawPinBitmap(Color color) async {
+    const w = 64;
+    const h = 88;
+    const cx = w / 2.0;
+    const r = 24.0;       // radius of the circular head
+    const tipY = h - 6.0; // y-coordinate of the sharp tip
+
+    final recorder = ui.PictureRecorder();
+    final canvas = ui.Canvas(
+      recorder,
+      Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
+    );
+
+    // ── Drop shadow ──────────────────────────────────────────────────────────
+    final shadowPaint = Paint()
+      ..color = Colors.black.withAlpha(55)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+    canvas.drawOval(
+      const Rect.fromLTWH(12, h - 18, 40, 12),
+      shadowPaint,
+    );
+
+    // ── Pin body (circle + triangle tip) ────────────────────────────────────
+    final bodyPaint = Paint()..color = color;
+
+    final path = Path()
+      // Circular head
+      ..addOval(Rect.fromCircle(
+          center: const Offset(cx, r + 2), radius: r))
+      // Triangular tip
+      ..moveTo(cx - 11, r + 14)
+      ..lineTo(cx, tipY)
+      ..lineTo(cx + 11, r + 14)
+      ..close();
+
+    canvas.drawPath(path, bodyPaint);
+
+    // ── White inner circle ───────────────────────────────────────────────────
+    canvas.drawCircle(
+      const Offset(cx, r + 2),
+      11,
+      Paint()..color = Colors.white,
+    );
+
+    // ── Red dot in the centre ────────────────────────────────────────────────
+    canvas.drawCircle(
+      const Offset(cx, r + 2),
+      5,
+      Paint()..color = color,
+    );
+
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(w, h);
+    final byteData =
+        await img.toByteData(format: ui.ImageByteFormat.png);
+    return byteData!.buffer.asUint8List();
   }
 
   // ── Build ─────────────────────────────────────────────────────────────────

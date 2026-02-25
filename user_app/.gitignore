@@ -26,6 +26,11 @@ migrate_working_dir/
 # Local environment secrets — never commit this
 .env
 
+# Firebase configuration — contains API keys, never commit
+firebase_options.dart
+lib/firebase_options.dart
+lib/responder/config/firebase_options.dart
+
 # Android Mapbox secret token — never commit this
 android/gradle.properties
 
