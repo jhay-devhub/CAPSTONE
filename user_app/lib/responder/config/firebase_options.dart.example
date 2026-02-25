@@ -2,7 +2,7 @@
 //
 // HOW TO USE:
 //   1. Copy this file and rename it to: firebase_options.dart
-//   2. Replace every placeholder value (YOUR_...) with your actual Firebase project credentials.
+//   2. Replace every placeholder value (ASK JHAYLORD KUNG ANO ANG MGA ILALAGAY).
 //   3. Run `flutter pub get` and you're good to go.
 //
 // WARNING: Never commit firebase_options.dart — it is listed in .gitignore.
