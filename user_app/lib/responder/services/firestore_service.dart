@@ -12,7 +12,7 @@ class FirestoreService {
   // ── Collection references ──────────────────────────────────────────────────
 
   CollectionReference<Map<String, dynamic>> get _reports =>
-      _db.collection('help_reports');
+      _db.collection('emergency');
 
   // ── Help Reports ───────────────────────────────────────────────────────────
 

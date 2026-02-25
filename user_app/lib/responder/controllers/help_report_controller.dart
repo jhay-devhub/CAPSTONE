@@ -64,8 +64,9 @@ class HelpReportController extends ChangeNotifier {
         status: HelpReportStatus.pending,
       );
       _setState(HelpReportState.success);
-    } catch (e) {
+    } catch (e, stack) {
       debugPrint('[HelpReportController] sendHelpReport error: $e');
+      debugPrint('[HelpReportController] stack: $stack');
       _errorMessage = e.toString();
       _setState(HelpReportState.failure);
     }

@@ -3,6 +3,7 @@ import '../../constants/app_colors.dart';
 import '../../constants/app_strings.dart';
 import '../../controllers/help_report_controller.dart';
 import '../../controllers/location_controller.dart';
+import '../../services/device_id_service.dart';
 import 'location_pin_screen.dart';
 import 'widgets/help_button_widget.dart';
 import 'widgets/home_header_widget.dart';
@@ -29,11 +30,24 @@ class _HomeScreenState extends State<HomeScreen> {
   /// True only while we are actively waiting for the device GPS fix.
   bool _isFetchingLocation = false;
 
+  /// Dynamic device model name.
+  String? _deviceName;
+
   @override
   void initState() {
     super.initState();
     _locationController.requestPermissionAndFetch();
     _helpController.addListener(_onHelpStateChanged);
+    _fetchDeviceName();
+  }
+
+  Future<void> _fetchDeviceName() async {
+    try {
+      final name = await DeviceIdService.instance.getDeviceName();
+      if (mounted) setState(() => _deviceName = name);
+    } catch (_) {
+      // Silently fail – header will show placeholder
+    }
   }
 
   @override
@@ -133,36 +147,29 @@ class _HomeScreenState extends State<HomeScreen> {
             final isBusy =
                 _helpController.isSending || _isFetchingLocation;
 
-            return Row(
-              children: [
-                // Left spacer – occupies the left ~45 % of the screen.
-                const Spacer(flex: 1),
-
-                // Content column – right ~55 % of the screen.
-                Expanded(
-                  flex: 11,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      const HomeHeaderWidget(),
-                      const SizedBox(height: 48),
-                      if (_isFetchingLocation)
-                        const _LocationFetchingIndicator()
-                      else
-                        HelpButtonWidget(
-                          onPressed: _onHelpButtonPressed,
-                          isEnabled: !isBusy,
-                        ),
-                      const SizedBox(height: 28),
-                      HelpStatusBanner(reportState: _helpController.state),
-                    ],
-                  ),
+            return Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 24),
+                    HomeHeaderWidget(deviceName: _deviceName),
+                    const SizedBox(height: 48),
+                    if (_isFetchingLocation)
+                      const _LocationFetchingIndicator()
+                    else
+                      HelpButtonWidget(
+                        onPressed: _onHelpButtonPressed,
+                        isEnabled: !isBusy,
+                      ),
+                    const SizedBox(height: 28),
+                    HelpStatusBanner(reportState: _helpController.state),
+                    const SizedBox(height: 24),
+                  ],
                 ),
-
-                // Small right margin.
-                const SizedBox(width: 120),
-              ],
+              ),
             );
           },
         ),

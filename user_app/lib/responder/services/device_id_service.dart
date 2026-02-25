@@ -14,6 +14,7 @@ class DeviceIdService {
 
   final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
   String? _cachedDeviceId;
+  String? _cachedDeviceName;
 
   /// Returns the unique device identifier.
   /// Throws on unsupported platforms.
@@ -37,5 +38,29 @@ class DeviceIdService {
 
     debugPrint('[DeviceIdService] Device ID: $_cachedDeviceId');
     return _cachedDeviceId!;
+  }
+
+  /// Returns a human-readable device name (e.g. "Samsung SM-A127F").
+  Future<String> getDeviceName() async {
+    if (_cachedDeviceName != null) return _cachedDeviceName!;
+
+    try {
+      if (Platform.isAndroid) {
+        final android = await _deviceInfo.androidInfo;
+        final brand = android.brand;
+        final model = android.model;
+        _cachedDeviceName = '${brand[0].toUpperCase()}${brand.substring(1)} $model';
+      } else if (Platform.isIOS) {
+        final ios = await _deviceInfo.iosInfo;
+        _cachedDeviceName = ios.utsname.machine;
+      } else {
+        _cachedDeviceName = 'Unknown Device';
+      }
+    } catch (e) {
+      debugPrint('[DeviceIdService] Error fetching device name: $e');
+      _cachedDeviceName = 'Unknown Device';
+    }
+
+    return _cachedDeviceName!;
   }
 }
