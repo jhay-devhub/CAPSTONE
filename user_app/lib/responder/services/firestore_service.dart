@@ -28,7 +28,7 @@ class FirestoreService {
   Stream<HelpReportModel?> watchReport(String reportId) {
     return _reports.doc(reportId).snapshots().map((doc) {
       if (!doc.exists || doc.data() == null) return null;
-      return HelpReportModel.fromFirestore(doc.id, doc.data()!);
+      return HelpReportModel.fromFirestore(doc);
     });
   }
 
@@ -39,7 +39,7 @@ class FirestoreService {
         .orderBy('timestamp', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => HelpReportModel.fromFirestore(doc.id, doc.data()))
+            .map((doc) => HelpReportModel.fromFirestore(doc))
             .toList());
   }
 
@@ -47,7 +47,7 @@ class FirestoreService {
   Future<HelpReportModel?> getReport(String reportId) async {
     final doc = await _reports.doc(reportId).get();
     if (!doc.exists || doc.data() == null) return null;
-    return HelpReportModel.fromFirestore(doc.id, doc.data()!);
+    return HelpReportModel.fromFirestore(doc);
   }
 
   /// Update the status of an existing report.

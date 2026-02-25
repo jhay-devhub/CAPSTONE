@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-=======
 import 'dart:io';
->>>>>>> 595f9dab6164cda79ddddad8ee835590f698916f
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -113,10 +110,7 @@ class HelpReportModel {
   const HelpReportModel({
     required this.id,
     required this.deviceId,
-<<<<<<< HEAD
-=======
     required this.deviceName,
->>>>>>> 595f9dab6164cda79ddddad8ee835590f698916f
     required this.latitude,
     required this.longitude,
     required this.timestamp,
@@ -131,18 +125,12 @@ class HelpReportModel {
   /// Local auto-generated ID (milliseconds since epoch).
   final String id;
 
-<<<<<<< HEAD
-  /// Unique hardware device identifier – the primary key that links
-  /// a report to the physical device that sent it.
-  final String deviceId;
-=======
   /// Unique device identifier used as the anonymous reporter ID.
   final String deviceId;
 
   /// Human-readable device name, e.g. "Samsung Galaxy A54".
   final String deviceName;
 
->>>>>>> 595f9dab6164cda79ddddad8ee835590f698916f
   final double latitude;
   final double longitude;
   final DateTime timestamp;
@@ -219,10 +207,7 @@ class HelpReportModel {
   HelpReportModel copyWith({
     String? id,
     String? deviceId,
-<<<<<<< HEAD
-=======
     String? deviceName,
->>>>>>> 595f9dab6164cda79ddddad8ee835590f698916f
     double? latitude,
     double? longitude,
     DateTime? timestamp,
@@ -236,10 +221,7 @@ class HelpReportModel {
     return HelpReportModel(
       id: id ?? this.id,
       deviceId: deviceId ?? this.deviceId,
-<<<<<<< HEAD
-=======
       deviceName: deviceName ?? this.deviceName,
->>>>>>> 595f9dab6164cda79ddddad8ee835590f698916f
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       timestamp: timestamp ?? this.timestamp,
@@ -255,11 +237,8 @@ class HelpReportModel {
   Map<String, dynamic> toJson() => {
         'id': id,
         'deviceId': deviceId,
-<<<<<<< HEAD
-=======
         'deviceName': deviceName,
         'firestoreId': firestoreId,
->>>>>>> 595f9dab6164cda79ddddad8ee835590f698916f
         'latitude': latitude,
         'longitude': longitude,
         'timestamp': timestamp.toIso8601String(),
@@ -269,46 +248,6 @@ class HelpReportModel {
         'photoPath': photoPath,
         'status': status.name,
       };
-
-  /// Converts this model to a Firestore-compatible map.
-  /// Uses [Timestamp] instead of ISO string for proper Firestore ordering.
-  Map<String, dynamic> toFirestore() => {
-        'deviceId': deviceId,
-        'latitude': latitude,
-        'longitude': longitude,
-        'timestamp': Timestamp.fromDate(timestamp),
-        'emergencyType': emergencyType.name,
-        'description': description,
-        'injuryNote': injuryNote,
-        'photoPath': photoPath,
-        'status': status.name,
-      };
-
-  /// Creates a [HelpReportModel] from a Firestore document.
-  factory HelpReportModel.fromFirestore(
-    String id,
-    Map<String, dynamic> json,
-  ) {
-    return HelpReportModel(
-      id: id,
-      deviceId: json['deviceId'] as String? ?? '',
-      latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
-      longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
-      timestamp: json['timestamp'] is Timestamp
-          ? (json['timestamp'] as Timestamp).toDate()
-          : DateTime.tryParse(json['timestamp']?.toString() ?? '') ??
-              DateTime.now(),
-      emergencyType: EmergencyType.values.byName(
-        json['emergencyType'] as String? ?? 'other',
-      ),
-      description: json['description'] as String?,
-      injuryNote: json['injuryNote'] as String?,
-      photoPath: json['photoPath'] as String?,
-      status: HelpReportStatus.values.byName(
-        json['status'] as String? ?? 'pending',
-      ),
-    );
-  }
 
   @override
   String toString() =>

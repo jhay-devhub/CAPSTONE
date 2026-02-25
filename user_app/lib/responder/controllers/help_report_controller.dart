@@ -1,12 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/help_report_model.dart';
-<<<<<<< HEAD
-import '../services/device_id_service.dart';
-import '../services/firestore_service.dart';
-=======
 import '../services/firestore_report_service.dart';
->>>>>>> 595f9dab6164cda79ddddad8ee835590f698916f
 
 /// Manages the state and logic for sending an emergency help report.
 /// Uses [ChangeNotifier] so the UI can rebuild reactively.
@@ -25,14 +20,9 @@ class HelpReportController extends ChangeNotifier {
   String? _errorMessage;
   HelpReportModel? _lastReport;
 
-<<<<<<< HEAD
-  final FirestoreService _firestoreService = FirestoreService.instance;
-  final DeviceIdService _deviceIdService = DeviceIdService.instance;
-=======
   /// Live status streamed from Firestore after a successful submission.
   HelpReportStatus? _liveStatus;
   StreamSubscription<List<HelpReportModel>>? _statusSub;
->>>>>>> 595f9dab6164cda79ddddad8ee835590f698916f
 
   HelpReportState get state => _state;
   String? get errorMessage => _errorMessage;
@@ -48,21 +38,11 @@ class HelpReportController extends ChangeNotifier {
 
   // ── Public actions ─────────────────────────────────────────────────────────
 
-<<<<<<< HEAD
-  /// Sends an emergency help report using the user's [latitude] and [longitude].
-  ///
-  /// [emergencyType] is required – it determines which vehicle is dispatched.
-  /// The device ID is fetched automatically from the hardware.
-  Future<void> sendHelpReport({
-    required double latitude,
-    required double longitude,
-=======
   Future<void> sendHelpReport({
     required double latitude,
     required double longitude,
     required String deviceId,
     required String deviceName,
->>>>>>> 595f9dab6164cda79ddddad8ee835590f698916f
     required EmergencyType emergencyType,
     String? description,
     String? injuryNote,
@@ -74,18 +54,10 @@ class HelpReportController extends ChangeNotifier {
     _errorMessage = null;
 
     try {
-      // Fetch the unique device ID automatically
-      final deviceId = await _deviceIdService.getDeviceId();
-
       final report = HelpReportModel(
-<<<<<<< HEAD
-        id: '',
-        deviceId: deviceId,
-=======
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         deviceId: deviceId,
         deviceName: deviceName,
->>>>>>> 595f9dab6164cda79ddddad8ee835590f698916f
         latitude: latitude,
         longitude: longitude,
         timestamp: DateTime.now(),
@@ -95,15 +67,6 @@ class HelpReportController extends ChangeNotifier {
         photoPath: photoPath,
       );
 
-<<<<<<< HEAD
-      // Send to Firestore
-      final docId = await _firestoreService.submitHelpReport(report);
-
-      _lastReport = report.copyWith(
-        id: docId,
-        status: HelpReportStatus.pending,
-      );
-=======
       final firestoreId = await _firestoreService.submitReport(report);
 
       _lastReport = report.copyWith(
@@ -115,7 +78,6 @@ class HelpReportController extends ChangeNotifier {
       // Open a real-time stream so the status banner reflects admin updates.
       _startStatusStream(deviceId);
 
->>>>>>> 595f9dab6164cda79ddddad8ee835590f698916f
       _setState(HelpReportState.success);
     } catch (e, stack) {
       debugPrint('[HelpReportController] sendHelpReport error: $e');
@@ -160,15 +122,12 @@ class HelpReportController extends ChangeNotifier {
     _state = newState;
     notifyListeners();
   }
-<<<<<<< HEAD
-=======
 
   @override
   void dispose() {
     _statusSub?.cancel();
     super.dispose();
   }
->>>>>>> 595f9dab6164cda79ddddad8ee835590f698916f
 }
 
 enum HelpReportState { idle, sending, success, failure }

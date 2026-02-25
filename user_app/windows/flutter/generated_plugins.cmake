@@ -5,10 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   cloud_firestore
   file_selector_windows
-<<<<<<< HEAD
   firebase_auth
-=======
->>>>>>> 595f9dab6164cda79ddddad8ee835590f698916f
   firebase_core
   geolocator_windows
   permission_handler_windows

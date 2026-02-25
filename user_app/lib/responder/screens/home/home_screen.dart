@@ -39,9 +39,6 @@ class _HomeScreenState extends State<HomeScreen> {
   /// True only while we are actively waiting for the device GPS fix.
   bool _isFetchingLocation = false;
 
-  /// Dynamic device model name.
-  String? _deviceName;
-
   @override
   void initState() {
     super.initState();
