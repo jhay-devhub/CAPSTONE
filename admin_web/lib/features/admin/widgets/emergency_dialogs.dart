@@ -144,15 +144,8 @@ class _AssignResponderDialogState extends State<_AssignResponderDialog> {
   void _submit() {
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) return;
-    widget.controller.assignResponder(
-      widget.report,
-      Responder(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: name,
-        role: _role,
-        status: _status,
-      ),
-    );
+    // TODO: Implement responder assignment via Firestore when ready.
+    // For now, this is a placeholder for future responder management.
     Navigator.of(context).pop();
   }
 

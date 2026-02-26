@@ -116,11 +116,15 @@ class _MapboxMapWidgetState extends State<MapboxMapWidget> {
     });
   }
 
-  /// Serialises [reports] with lat/lng to JSON and calls the JS bridge.
+  /// Serialises only active/pending [reports] with lat/lng to JSON and calls
+  /// the JS bridge. Resolved reports are excluded so their pins are removed.
   void _updateMarkers(List<EmergencyReport> reports) {
     if (!_ctrl.isMapReady.value) return;
     final data = reports
-        .where((r) => r.latitude != null && r.longitude != null)
+        .where((r) =>
+            r.status != EmergencyStatus.resolved &&
+            r.latitude != null &&
+            r.longitude != null)
         .map((r) => {
               'id': r.id,
               'lat': r.latitude!,

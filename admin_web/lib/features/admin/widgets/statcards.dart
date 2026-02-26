@@ -1,42 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../controllers/emergency_controller.dart';
 
 /// A row of four summary stat cards shown at the top of the dashboard.
-/// Replace each [value] with live data when wiring up real data sources.
+/// Displays live stats from the EmergencyController reactive state.
 class StatCardsRow extends StatelessWidget {
   const StatCardsRow({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<EmergencyController>();
+
     return Row(
       children: [
-        StatCard(
-          icon: Icons.emergency_outlined,
-          label: 'Total Emergency',
-          value: '—',
-          color: AppColors.primary,
+        Obx(
+          () => StatCard(
+            icon: Icons.emergency_outlined,
+            label: 'Total Emergency',
+            value: controller.totalCount.toString(),
+            color: AppColors.primary,
+          ),
         ),
         const SizedBox(width: 16),
-        StatCard(
-          icon: Icons.report_problem_outlined,
-          label: 'Active',
-          value: '—',
-          color: const Color.fromARGB(255, 255, 0, 0),
+        Obx(
+          () => StatCard(
+            icon: Icons.report_problem_outlined,
+            label: 'Active',
+            value: controller.activeCount.toString(),
+            color: const Color.fromARGB(255, 255, 0, 0),
+          ),
         ),
         const SizedBox(width: 16),
-        StatCard(
-          icon: Icons.report_problem_outlined,
-          label: 'Pending',
-          value: '—',
-          color: AppColors.warning,
+        Obx(
+          () => StatCard(
+            icon: Icons.report_problem_outlined,
+            label: 'Pending',
+            value: controller.pendingCount.toString(),
+            color: AppColors.warning,
+          ),
         ),
         const SizedBox(width: 16),
-        StatCard(
-          icon: Icons.check_circle_outline,
-          label: 'Resolved',
-          value: '—',
-          color: const Color.fromARGB(255, 21, 255, 0),
+        Obx(
+          () => StatCard(
+            icon: Icons.check_circle_outline,
+            label: 'Resolved',
+            value: controller.resolvedCount.toString(),
+            color: const Color.fromARGB(255, 21, 255, 0),
+          ),
         ),
       ],
     );
