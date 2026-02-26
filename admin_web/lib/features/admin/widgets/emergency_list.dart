@@ -202,6 +202,17 @@ class _ReportList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      // Show loading state while first load is in progress
+      if (controller.isLoadingReports.value && controller.totalCount == 0) {
+        return const Center(
+          child: SizedBox(
+            width: 32,
+            height: 32,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        );
+      }
+
       final reports = controller.filteredReports;
       if (reports.isEmpty) {
         return const Center(
@@ -316,16 +327,22 @@ class _ReportCard extends StatelessWidget {
   IconData _typeIcon(EmergencyType t) => switch (t) {
         EmergencyType.fire => Icons.local_fire_department_rounded,
         EmergencyType.medical => Icons.medical_services_rounded,
-        EmergencyType.police => Icons.local_police_rounded,
+        EmergencyType.police ||
+        EmergencyType.crime =>
+          Icons.local_police_rounded,
         EmergencyType.flood => Icons.water_rounded,
+        EmergencyType.roadAccident => Icons.car_crash_rounded,
+        EmergencyType.naturalDisaster => Icons.landslide_rounded,
         EmergencyType.other => Icons.warning_rounded,
       };
 
   Color _typeColor(EmergencyType t) => switch (t) {
         EmergencyType.fire => const Color(0xFFEF4444),
         EmergencyType.medical => const Color(0xFF3B82F6),
-        EmergencyType.police => const Color(0xFF8B5CF6),
+        EmergencyType.police || EmergencyType.crime => const Color(0xFF8B5CF6),
         EmergencyType.flood => const Color(0xFF0EA5E9),
+        EmergencyType.roadAccident => const Color(0xFFFB923C),
+        EmergencyType.naturalDisaster => const Color(0xFF84CC16),
         EmergencyType.other => AppColors.warning,
       };
 }

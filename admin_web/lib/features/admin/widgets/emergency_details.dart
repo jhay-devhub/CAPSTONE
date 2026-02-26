@@ -81,6 +81,12 @@ class EmergencyDetailsView extends StatelessWidget {
                   _DetailSection(label: 'ADDRESS', value: report.address),
                   const SizedBox(height: 12),
 
+                  // ── Device Name ───────────────────────────────────
+                  if (report.deviceName != null) ...[
+                    _DetailSection(label: 'REPORTER DEVICE', value: report.deviceName!),
+                    const SizedBox(height: 12),
+                  ],
+
                   // ── Lat / Lng ─────────────────────────────────────────
                   if (report.latitude != null && report.longitude != null) ...[
                     Row(
@@ -177,9 +183,12 @@ class EmergencyDetailsView extends StatelessWidget {
                       ),
                     ),
                     onPressed: () => showAssignResponderDialog(context, report, controller),
-                    child: const Text('Assign Responder',
-                        style: TextStyle(
-                            fontSize: 12, color: AppColors.textPrimary)),
+                    child: const Tooltip(
+                      message: 'Coming soon — responder assignment via chat',
+                      child: Text('Assign Responder',
+                          style: TextStyle(
+                              fontSize: 12, color: AppColors.textSecondary)),
+                    ),
                   ),
                 ),
               ],
@@ -193,16 +202,22 @@ class EmergencyDetailsView extends StatelessWidget {
   IconData _typeIcon(EmergencyType t) => switch (t) {
         EmergencyType.fire => Icons.local_fire_department_rounded,
         EmergencyType.medical => Icons.medical_services_rounded,
-        EmergencyType.police => Icons.local_police_rounded,
+        EmergencyType.police ||
+        EmergencyType.crime =>
+          Icons.local_police_rounded,
         EmergencyType.flood => Icons.water_rounded,
+        EmergencyType.roadAccident => Icons.car_crash_rounded,
+        EmergencyType.naturalDisaster => Icons.landslide_rounded,
         EmergencyType.other => Icons.warning_rounded,
       };
 
   Color _typeColor(EmergencyType t) => switch (t) {
         EmergencyType.fire => const Color(0xFFEF4444),
         EmergencyType.medical => const Color(0xFF3B82F6),
-        EmergencyType.police => const Color(0xFF8B5CF6),
+        EmergencyType.police || EmergencyType.crime => const Color(0xFF8B5CF6),
         EmergencyType.flood => const Color(0xFF0EA5E9),
+        EmergencyType.roadAccident => const Color(0xFFFB923C),
+        EmergencyType.naturalDisaster => const Color(0xFF84CC16),
         EmergencyType.other => AppColors.warning,
       };
 }
