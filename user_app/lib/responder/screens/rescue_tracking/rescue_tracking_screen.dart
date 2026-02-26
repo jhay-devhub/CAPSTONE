@@ -46,12 +46,19 @@ class _RescueTrackingScreenState extends State<RescueTrackingScreen>
   bool _isMapExpanded = false;
 
   void _reCentre() {
-    _locationController.requestPermissionAndFetch().then((_) {
-      final pos = _locationController.currentPosition;
-      if (pos != null) {
-        _mapController.flyTo(pos.longitude, pos.latitude, targetZoom: 15.0);
-      }
-    });
+    final pos = _locationController.currentPosition;
+    if (pos != null) {
+      // Just fly the camera to the already-known position – no GPS reload.
+      _mapController.flyTo(pos.longitude, pos.latitude, targetZoom: 15.0);
+    } else {
+      // No cached position yet; fetch once and then fly.
+      _locationController.requestPermissionAndFetch().then((_) {
+        final p = _locationController.currentPosition;
+        if (p != null) {
+          _mapController.flyTo(p.longitude, p.latitude, targetZoom: 15.0);
+        }
+      });
+    }
   }
 
   void _toggleMapSize() {

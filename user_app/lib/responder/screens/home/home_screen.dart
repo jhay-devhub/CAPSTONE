@@ -6,6 +6,7 @@ import '../../controllers/location_controller.dart';
 import '../../controllers/recent_reports_controller.dart';
 import '../../services/device_id_service.dart';
 import 'location_pin_screen.dart';
+import 'report_history_screen.dart';
 import 'widgets/help_button_widget.dart';
 import 'widgets/home_header_widget.dart';
 import 'widgets/help_status_banner.dart';
@@ -96,6 +97,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ── Actions ────────────────────────────────────────────────────────────────
 
+  void _openReportHistory() {
+    if (_deviceId.isEmpty) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ReportHistoryScreen(deviceId: _deviceId),
+      ),
+    );
+  }
+
   Future<void> _onHelpButtonPressed() async {
     // Guard: ignore taps while a report is already in progress.
     if (_helpController.isSending || _isFetchingLocation) return;
@@ -159,11 +169,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.scaffold,
-      appBar: AppBar(
-        title: const Text(AppStrings.appName),
-        centerTitle: true,
-        elevation: 0,
-      ),
       body: SafeArea(
         child: ListenableBuilder(
           listenable: Listenable.merge([_helpController, _locationController]),
@@ -172,39 +177,54 @@ class _HomeScreenState extends State<HomeScreen> {
                 _helpController.isSending || _isFetchingLocation;
 
             return SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Greeting header card ─────────────────────────────────
-                  HomeHeaderWidget(deviceName: _deviceName),
-
-                  const SizedBox(height: 44),
-
-                  // ── HELP button ──────────────────────────────────────────
-                  if (_isFetchingLocation)
-                    const _LocationFetchingIndicator()
-                  else
-                    HelpButtonWidget(
-                      onPressed: _onHelpButtonPressed,
-                      isEnabled: !isBusy,
-                    ),
-
-                  const SizedBox(height: 24),
-
-                  // ── Live status banner (only visible when report active) ─
-                  ListenableBuilder(
-                    listenable: _helpController,
-                    builder: (context, _) =>
-                        HelpStatusBanner(controller: _helpController),
+                  // ── Greeting header ──────────────────────────────────────
+                  HomeHeaderWidget(
+                    deviceName: _deviceName,
+                    deviceId: _deviceId,
+                    onHistoryPressed: _openReportHistory,
                   ),
 
-                  const SizedBox(height: 36),
+                  // ── HELP button (vertically centred on screen) ───────
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.35,
+                    child: Center(
+                      child: _isFetchingLocation
+                          ? const _LocationFetchingIndicator()
+                          : HelpButtonWidget(
+                              onPressed: _onHelpButtonPressed,
+                              isEnabled: !isBusy,
+                            ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // ── Live status banner (only visible when report active) ─
+                  Center(
+                    child: ListenableBuilder(
+                      listenable: _helpController,
+                      builder: (context, _) =>
+                          HelpStatusBanner(controller: _helpController),
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
 
                   // ── Recent reports (live from Firestore, last 3) ─────────
                   if (_recentReportsController != null)
                     RecentReportsSection(
-                        controller: _recentReportsController!),
+                      controller: _recentReportsController!,
+                      onViewAllPressed: _openReportHistory,
+                    ),
+
+                  const SizedBox(height: 24),
+
+                  // ── Safety tip card ──────────────────────────────────────
+                  const _SafetyTipCard(),
                 ],
               ),
             );
@@ -234,6 +254,76 @@ class _LocationFetchingIndicator extends StatelessWidget {
           textAlign: TextAlign.center,
         ),
       ],
+    );
+  }
+}
+
+/// A small safety tip card shown at the bottom of the Home screen.
+class _SafetyTipCard extends StatelessWidget {
+  const _SafetyTipCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF1565C0).withAlpha(20),
+            const Color(0xFF1565C0).withAlpha(8),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF1565C0).withAlpha(40),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1565C0).withAlpha(30),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.lightbulb_outline_rounded,
+              color: Color(0xFF1565C0),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Safety Tip',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Color(0xFF1565C0),
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Stay calm during emergencies. Tap HELP to quickly alert nearby responders.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

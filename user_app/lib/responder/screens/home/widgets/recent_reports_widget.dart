@@ -6,9 +6,16 @@ import '../../../models/help_report_model.dart';
 /// Displays up to [RecentReportsController.maxReports] previous reports in
 /// compact cards. Updates live whenever Firestore changes.
 class RecentReportsSection extends StatelessWidget {
-  const RecentReportsSection({super.key, required this.controller});
+  const RecentReportsSection({
+    super.key,
+    required this.controller,
+    this.onViewAllPressed,
+  });
 
   final RecentReportsController controller;
+
+  /// Called when the "View All" link is tapped.
+  final VoidCallback? onViewAllPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +39,19 @@ class RecentReportsSection extends StatelessWidget {
                         letterSpacing: 0.4,
                       ),
                 ),
+                const Spacer(),
+                if (onViewAllPressed != null)
+                  GestureDetector(
+                    onTap: onViewAllPressed,
+                    child: Text(
+                      'View All',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 12),

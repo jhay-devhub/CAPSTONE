@@ -1,88 +1,138 @@
 import 'package:flutter/material.dart';
 import '../../../constants/app_colors.dart';
 
-/// Gradient header card shown at the top of the Home screen.
+/// Clean header shown at the top of the Home screen.
 ///
-/// Shows a time-based greeting, a subtitle, and the device name as a
-/// small chip so the anonymous reporter can identify their device.
+/// Shows a time-based greeting with user name (or "Guest"),
+/// device ID below, and a notification icon.
 class HomeHeaderWidget extends StatelessWidget {
-  const HomeHeaderWidget({super.key, this.deviceName = ''});
+  const HomeHeaderWidget({
+    super.key,
+    this.deviceName = '',
+    this.deviceId = '',
+    this.onHistoryPressed,
+  });
 
   /// The resolved device name (e.g. "Samsung Galaxy S23").
-  /// Shows a placeholder while it's still being fetched.
   final String deviceName;
+
+  /// The device ID shown as a small identifier.
+  final String deviceId;
+
+  /// Called when the history icon is tapped.
+  final VoidCallback? onHistoryPressed;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(22, 26, 22, 22),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.primary, AppColors.primaryDark],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withAlpha(80),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Time-based greeting
-          Text(
-            _greeting(),
-            style: const TextStyle(
-              color: AppColors.textOnPrimary,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              height: 1.2,
-            ),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Your safety is our priority.',
-            style: TextStyle(
-              color: Color(0xCCFFFFFF),
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 16),
+    // If user is not logged in, show 'Guest'; otherwise show their name.
+    // Currently the app uses anonymous device-based identity,
+    // so we always show 'Guest'.
+    const userName = 'Guest';
 
-          // Device chip
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Avatar circle
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
-              color: Colors.white.withAlpha(30),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.white.withAlpha(60),
-                width: 1,
+              color: AppColors.primary.withAlpha(25),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                userName[0].toUpperCase(),
+                style: const TextStyle(
+                  color: AppColors.primary,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+          ),
+          const SizedBox(width: 14),
+
+          // Greeting + device info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.smartphone,
-                    size: 14, color: Color(0xDDFFFFFF)),
-                const SizedBox(width: 6),
                 Text(
-                  deviceName.isEmpty ? 'This device' : deviceName,
+                  '${_greeting()}, $userName',
                   style: const TextStyle(
-                    color: Color(0xEEFFFFFF),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                    color: AppColors.textPrimary,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    height: 1.2,
                   ),
+                ),
+                const SizedBox(height: 3),
+                const Text(
+                  'How are you today?',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    if (deviceName.isNotEmpty) ...[
+                      Icon(Icons.smartphone,
+                          size: 12, color: AppColors.textSecondary),
+                      const SizedBox(width: 3),
+                      Flexible(
+                        child: Text(
+                          deviceName,
+                          style: TextStyle(
+                            color: AppColors.textSecondary.withAlpha(180),
+                            fontSize: 11,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                    if (deviceName.isNotEmpty && deviceId.isNotEmpty)
+                      Text(
+                        '  •  ',
+                        style: TextStyle(
+                          color: AppColors.textSecondary.withAlpha(120),
+                          fontSize: 11,
+                        ),
+                      ),
+                    if (deviceId.isNotEmpty)
+                      Flexible(
+                        child: Text(
+                          deviceId,
+                          style: TextStyle(
+                            color: AppColors.textSecondary.withAlpha(160),
+                            fontSize: 10,
+                            fontFamily: 'monospace',
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),
+          ),
+
+          // Action icons
+          IconButton(
+            onPressed: onHistoryPressed,
+            icon: const Icon(Icons.history_rounded),
+            color: AppColors.textPrimary,
+            iconSize: 26,
+          ),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.notifications_none_rounded),
+            color: AppColors.textPrimary,
+            iconSize: 26,
           ),
         ],
       ),
@@ -91,9 +141,9 @@ class HomeHeaderWidget extends StatelessWidget {
 
   static String _greeting() {
     final hour = DateTime.now().hour;
-    if (hour >= 5 && hour < 12) return 'Good morning! 👋';
-    if (hour >= 12 && hour < 17) return 'Good afternoon! 👋';
-    if (hour >= 17 && hour < 21) return 'Good evening! 👋';
-    return 'Stay safe tonight! 🌙';
+    if (hour >= 5 && hour < 12) return 'Good Morning';
+    if (hour >= 12 && hour < 17) return 'Good Afternoon';
+    if (hour >= 17 && hour < 21) return 'Good Evening';
+    return 'Good Evening';
   }
 }

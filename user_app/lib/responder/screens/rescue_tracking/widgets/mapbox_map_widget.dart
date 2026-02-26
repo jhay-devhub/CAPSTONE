@@ -270,7 +270,7 @@ class _MapboxMapWidgetState extends State<MapboxMapWidget> {
         _MapToolbar(controller: _ctrl),
         Expanded(
           child: MapWidget(
-            key: const ValueKey('rescue-tracking-map'),
+            key: ValueKey('rescue-map-${_ctrl.activeStyle}'),
             styleUri: _ctrl.activeStyle,
             cameraOptions: CameraOptions(
               center: Point(

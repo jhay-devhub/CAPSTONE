@@ -9,7 +9,7 @@ abstract final class AppStrings {
 
   // Bottom navigation labels
   static const String navHome = 'Home';
-  static const String navRescue = 'Rescue & Tracking';
+  static const String navRescue = 'Tracking';
   static const String navSafetyTips = 'Safety Tips';
   static const String navProfile = 'Profile';
 
@@ -45,7 +45,7 @@ abstract final class AppStrings {
   static const String helpSending = 'Sending report…';
 
   // Rescue & Tracking screen
-  static const String rescueTitle = 'Rescue & Tracking';
+  static const String rescueTitle = 'Tracking';
   static const String rescueSubtitle = 'Live map of your location and nearby responders.';
   static const String locationPermissionDenied =
       'Location permission denied. Please enable it in Settings.';
