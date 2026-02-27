@@ -45,6 +45,14 @@ class _RescueTrackingScreenState extends State<RescueTrackingScreen>
 
   bool _isMapExpanded = false;
 
+  /// ID of the report that the user explicitly dismissed – panel is hidden
+  /// while the active report's id matches this value.
+  String? _dismissedReportId;
+
+  void _dismissPanel(String reportId) {
+    setState(() => _dismissedReportId = reportId);
+  }
+
   void _reCentre() {
     final pos = _locationController.currentPosition;
     if (pos != null) {
@@ -95,13 +103,25 @@ class _RescueTrackingScreenState extends State<RescueTrackingScreen>
               },
             ),
           ),
-          // Live status panel – only shown when a report exists.
+          // Live status panel – only shown when a report exists and the user
+          // has not dismissed it for this particular report.
           ListenableBuilder(
             listenable: _reportController,
             builder: (context, _) {
               final report = _reportController.activeReport;
               if (report == null) return const SizedBox.shrink();
-              return _ReportStatusPanel(report: report);
+              // Auto-reset dismiss when a new report becomes active.
+              if (_dismissedReportId != null &&
+                  _dismissedReportId != report.id) {
+                _dismissedReportId = null;
+              }
+              if (_dismissedReportId == report.id) {
+                return const SizedBox.shrink();
+              }
+              return _ReportStatusPanel(
+                report: report,
+                onDismiss: () => _dismissPanel(report.id),
+              );
             },
           ),
         ],
@@ -113,8 +133,12 @@ class _RescueTrackingScreenState extends State<RescueTrackingScreen>
 // ── Status panel ──────────────────────────────────────────────────────────────
 
 class _ReportStatusPanel extends StatelessWidget {
-  const _ReportStatusPanel({required this.report});
+  const _ReportStatusPanel({
+    required this.report,
+    required this.onDismiss,
+  });
   final HelpReportModel report;
+  final VoidCallback onDismiss;
 
   Color _statusColor() => switch (report.status) {
         HelpReportStatus.pending => AppColors.warning,
@@ -164,12 +188,26 @@ class _ReportStatusPanel extends StatelessWidget {
             children: [
               Icon(_statusIcon(), color: color, size: 20),
               const SizedBox(width: 8),
-              Text(
-                _statusLabel(),
-                style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
+              Expanded(
+                child: Text(
+                  _statusLabel(),
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              // Dismiss button – hides the panel without clearing the report.
+              GestureDetector(
+                onTap: onDismiss,
+                child: const Padding(
+                  padding: EdgeInsets.only(left: 8),
+                  child: Icon(
+                    Icons.close,
+                    size: 18,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ),
             ],

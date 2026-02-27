@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/help_report_model.dart';
+import '../services/device_id_service.dart';
 import '../services/firestore_report_service.dart';
 
 /// Manages the state and logic for sending an emergency help report.
@@ -10,7 +11,9 @@ import '../services/firestore_report_service.dart';
 /// that device's reports so [liveStatus] stays up-to-date in real-time
 /// (e.g. pending → acknowledged → in-progress).
 class HelpReportController extends ChangeNotifier {
-  HelpReportController();
+  HelpReportController() {
+    _autoRestore();
+  }
 
   final FirestoreReportService _firestoreService =
       FirestoreReportService.instance;
@@ -97,6 +100,17 @@ class HelpReportController extends ChangeNotifier {
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
+  /// Called once on construction: fetches device ID and subscribes to any
+  /// existing active report so the banner reappears after an app restart.
+  Future<void> _autoRestore() async {
+    try {
+      final deviceId = await DeviceIdService.instance.getDeviceId();
+      _startStatusStream(deviceId);
+    } catch (e) {
+      debugPrint('[HelpReportController] autoRestore error: $e');
+    }
+  }
+
   void _startStatusStream(String deviceId) {
     _statusSub?.cancel();
     _statusSub = _firestoreService
@@ -109,9 +123,20 @@ class HelpReportController extends ChangeNotifier {
         notifyListeners();
         return;
       }
-      final latest = reports.first; // ordered newest-first
-      _liveStatus = latest.status;
-      _lastReport = latest;
+      // Use the most recent non-resolved/cancelled report, or null if all done.
+      final active = reports.where(
+        (r) =>
+            r.status != HelpReportStatus.resolved &&
+            r.status != HelpReportStatus.cancelled,
+      ).toList();
+      if (active.isEmpty) {
+        _liveStatus = null;
+        _lastReport = null;
+      } else {
+        final latest = active.first;
+        _liveStatus = latest.status;
+        _lastReport = latest;
+      }
       notifyListeners();
     }, onError: (e) {
       debugPrint('[HelpReportController] status stream error: $e');

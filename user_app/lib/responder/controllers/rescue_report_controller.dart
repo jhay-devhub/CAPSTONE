@@ -43,12 +43,14 @@ class RescueReportController extends ChangeNotifier {
             _activeReport = null;
           } else {
             // Pick the first non-resolved, non-cancelled report (newest first).
-            _activeReport = reports.firstWhere(
+            // If every report is resolved/cancelled, clear the active report so
+            // the map pin and status panel are removed.
+            final active = reports.where(
               (r) =>
                   r.status != HelpReportStatus.resolved &&
                   r.status != HelpReportStatus.cancelled,
-              orElse: () => reports.first,
-            );
+            ).toList();
+            _activeReport = active.isEmpty ? null : active.first;
           }
           _isLoading = false;
           notifyListeners();
