@@ -31,6 +31,8 @@ firebase_options.dart
 lib/firebase_options.dart
 lib/responder/config/firebase_options.dart
 
+.env
+
 # Android Mapbox secret token — never commit this
 android/gradle.properties
 
